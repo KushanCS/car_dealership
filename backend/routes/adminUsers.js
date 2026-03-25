@@ -5,26 +5,39 @@ const auth = require("../middleware/auth.middleware");
 const authorize = require("../middleware/authorize");
 const { validateObjectId } = require("../utils/validateObjectId");
 const { logActivity } = require("../utils/activityLogger");
+const { validateStrongPassword } = require("../utils/passwordValidation");
+const { normalizeEmail, validateEmailAddress } = require("../utils/inputValidation");
 
 router.post("/create", auth, authorize("admin"), async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, confirmPassword, role } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "name, email, password are required" });
+    if (!name || !email || !password || !confirmPassword) {
+      return res.status(400).json({ message: "name, email, password, and confirmPassword are required" });
     }
 
-    const allowedRoles = ["staff", "manager", "admin"];
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const emailError = validateEmailAddress(normalizedEmail);
+    if (emailError) return res.status(400).json({ message: emailError });
+
+    const passwordError = validateStrongPassword(password);
+    if (passwordError) return res.status(400).json({ message: passwordError });
+
+    const allowedRoles = ["staff", "user"];
     const safeRole = allowedRoles.includes(role) ? role : "staff";
 
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
     const hashed = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashed,
       role: safeRole,
       isDeleted: false,
@@ -54,7 +67,7 @@ router.post("/create", auth, authorize("admin"), async (req, res) => {
   }
 });
 
-router.get("/", auth, authorize("admin", "manager"), async (req, res) => {
+router.get("/", auth, authorize("admin"), async (req, res) => {
   try {
     const users = await User.find().select("-password").sort({ createdAt: -1 });
     res.json(users);
@@ -70,10 +83,15 @@ router.put("/:id", auth, authorize("admin"), async (req, res) => {
 
     const { role, isDeleted, name, email } = req.body;
 
-    const allowedRoles = ["admin", "manager", "staff", "user"];
+    const allowedRoles = ["staff", "user"];
     const update = {};
     if (typeof name === "string" && name.trim()) update.name = name.trim();
-    if (typeof email === "string" && email.trim()) update.email = email.trim().toLowerCase();
+    if (typeof email === "string" && email.trim()) {
+      const normalizedEmail = normalizeEmail(email);
+      const emailError = validateEmailAddress(normalizedEmail);
+      if (emailError) return res.status(400).json({ message: emailError });
+      update.email = normalizedEmail;
+    }
     if (role && allowedRoles.includes(role)) update.role = role;
     if (typeof isDeleted === "boolean") update.isDeleted = isDeleted;
 

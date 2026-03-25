@@ -76,7 +76,7 @@ const hasShopClosureEvent = async (dateStr) => {
 // Get available staff members for a given date and time
 const getAvailableStaff = async (dateStr, timeStr, excludeAppointmentId = null) => {
   const allStaff = await User.find({
-    role: { $in: ["staff", "manager"] },
+    role: "staff",
     isDeleted: false
   });
 

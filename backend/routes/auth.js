@@ -6,20 +6,30 @@ const { sendResetOtpEmail } = require("../utils/emailService");
 const { logActivity } = require("../utils/activityLogger");
 const auth = require("../middleware/auth.middleware");
 const { signAuthToken, serverSessionId } = require("../utils/authSession");
+const { validateStrongPassword } = require("../utils/passwordValidation");
+const { normalizeEmail, validateEmailAddress } = require("../utils/inputValidation");
 
 const buildOtpHash = (email, otp) =>
   crypto.createHash("sha256").update(`${String(email).toLowerCase()}:${otp}`).digest("hex");
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body; 
-    if (!name || !email || !password) return res.status(400).json({ message: "All fields required" });
+    const { name, email, password, confirmPassword } = req.body; 
+    if (!name || !email || !password || !confirmPassword) return res.status(400).json({ message: "All fields required" });
+    if (password !== confirmPassword) return res.status(400).json({ message: "Passwords do not match" });
 
-    const existing = await User.findOne({ email });
+    const normalizedEmail = normalizeEmail(email);
+    const emailError = validateEmailAddress(normalizedEmail);
+    if (emailError) return res.status(400).json({ message: emailError });
+
+    const passwordError = validateStrongPassword(password);
+    if (passwordError) return res.status(400).json({ message: passwordError });
+
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashed, role: "user" });
+    const user = await User.create({ name, email: normalizedEmail, password: hashed, role: "user" });
 
     await logActivity({
       actionType: "CREATE",
@@ -35,7 +45,7 @@ router.post("/register", async (req, res) => {
       },
     });
 
-    res.status(201).json({ message: "User registered successfully", user: { id: user._id, name, email, role: user.role } });
+    res.status(201).json({ message: "User registered successfully", user: { id: user._id, name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -44,7 +54,11 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email, isDeleted: false });
+    const normalizedEmail = normalizeEmail(email);
+    const emailError = validateEmailAddress(normalizedEmail);
+    if (emailError) return res.status(400).json({ message: emailError });
+
+    const user = await User.findOne({ email: normalizedEmail, isDeleted: false });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.password);
@@ -63,7 +77,10 @@ router.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required" });
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    const emailError = validateEmailAddress(normalizedEmail);
+    if (emailError) return res.status(400).json({ message: emailError });
+
     console.log(`[AUTH] Forgot password requested for ${normalizedEmail}`);
     const user = await User.findOne({ email: normalizedEmail, isDeleted: false });
     if (!user) {
@@ -112,11 +129,13 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
-    }
+    const passwordError = validateStrongPassword(password);
+    if (passwordError) return res.status(400).json({ message: passwordError });
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    const emailError = validateEmailAddress(normalizedEmail);
+    if (emailError) return res.status(400).json({ message: emailError });
+
     const user = await User.findOne({
       email: normalizedEmail,
       resetOtp: buildOtpHash(normalizedEmail, String(otp).trim()),

@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const Notification = require("../models/Notification");
+const auth = require("../middleware/auth.middleware");
+const authorize = require("../middleware/authorize");
 
-router.post("/add", async (req, res) => {
+router.post("/add", auth, authorize("admin", "staff"), async (req, res) => {
     try {
         const notif = new Notification(req.body);
         res.status(201).json(await notif.save());
@@ -15,7 +17,7 @@ router.post("/add", async (req, res) => {
     }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", auth, authorize("admin", "staff"), async (req, res) => {
     try {
         res.json(await Notification.find().populate("recipient"));
     } catch (err) {
@@ -23,7 +25,7 @@ router.get("/", async (req, res) => {
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, authorize("admin", "staff"), async (req, res) => {
     try {
         const updated = await Notification.findByIdAndUpdate(
             req.params.id,
@@ -37,7 +39,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, authorize("admin", "staff"), async (req, res) => {
     try {
         const deleted = await Notification.findByIdAndDelete(req.params.id);
         if (!deleted) return res.status(404).json({ message: "Notification not found" });
