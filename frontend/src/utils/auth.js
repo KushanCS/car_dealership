@@ -4,6 +4,15 @@ const TOKEN_KEY = "token";
 const ROLE_KEY = "role";
 const USER_KEY = "user"; // store user object (optional but useful)
 
+<<<<<<< HEAD
+=======
+export const getDefaultRoute = (role) => {
+  if (role === "user") return "/my-appointments";
+  if (["admin", "manager", "staff"].includes(role)) return "/vehicles";
+  return "/";
+};
+
+>>>>>>> main
 export const setAuth = ({ token, role, user }) => {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   if (role) localStorage.setItem(ROLE_KEY, role);
@@ -34,4 +43,8 @@ export const clearAuth = () => {
   localStorage.removeItem(USER_KEY);
 
   window.dispatchEvent(new Event("auth-change"));
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> main

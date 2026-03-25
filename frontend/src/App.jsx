@@ -5,6 +5,10 @@ import { ToastProvider } from "./components/ToastProvider";
 import AppRoutes from "./routes/AppRoutes";
 import { getAuth } from "./utils/auth";
 import { applyTheme, getTheme, initializeTheme } from "./utils/theme";
+<<<<<<< HEAD
+=======
+import api from "./api/axios";
+>>>>>>> main
 
 export default function App() {
   const [auth, setAuthState] = useState(getAuth());
@@ -35,6 +39,17 @@ export default function App() {
     applyTheme(getTheme());
   }, [isAdmin]);
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    if (!auth?.token) return;
+
+    api.get("/auth/validate").catch(() => {
+      // The axios interceptor handles invalid sessions by clearing auth and redirecting.
+    });
+  }, [auth?.token]);
+
+>>>>>>> main
   return (
     <ToastProvider>
       {isAdmin ? (

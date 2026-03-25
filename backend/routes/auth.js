@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { sendResetOtpEmail } = require("../utils/emailService");
 const { logActivity } = require("../utils/activityLogger");
+const auth = require("../middleware/auth.middleware");
+const { signAuthToken, serverSessionId } = require("../utils/authSession");
 
 const buildOtpHash = (email, otp) =>
   crypto.createHash("sha256").update(`${String(email).toLowerCase()}:${otp}`).digest("hex");
@@ -49,7 +50,7 @@ router.post("/login", async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = signAuthToken({ id: user._id, role: user.role });
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
@@ -140,6 +141,17 @@ router.post("/reset-password", async (req, res) => {
     console.error("Reset password error:", err);
     res.status(500).json({ message: "Failed to reset password" });
   }
+});
+
+router.get("/validate", auth, async (req, res) => {
+  res.json({
+    valid: true,
+    sessionId: serverSessionId,
+    user: {
+      id: req.user.id,
+      role: req.user.role,
+    },
+  });
 });
 
 module.exports = router;

@@ -36,6 +36,10 @@ import EditStaff from "../pages/Admin/EditStaff";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import Activities from "../pages/Admin/Activities";
 import RequireAuth from "../components/RequireAuth";
+<<<<<<< HEAD
+=======
+import RequireGuest from "../components/RequireGuest";
+>>>>>>> main
 
 import AddDocument from "../pages/Documents/AddDocument";
 import EditDocument from "../pages/Documents/EditDocument";
@@ -133,10 +137,17 @@ function AppRoutes() {
       </RequireAuth>} />
 
       {/* Auth Routes - Public */}
+<<<<<<< HEAD
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+=======
+      <Route path="/login" element={<RequireGuest><Login /></RequireGuest>} />
+      <Route path="/register" element={<RequireGuest><Register /></RequireGuest>} />
+      <Route path="/forgot-password" element={<RequireGuest><ForgotPassword /></RequireGuest>} />
+      <Route path="/reset-password" element={<RequireGuest><ResetPassword /></RequireGuest>} />
+>>>>>>> main
 
       {/* Admin Dashboard & Staff Management */}
       <Route path="/admin/dashboard" element={<RequireAuth roles={["admin", "manager"]}>

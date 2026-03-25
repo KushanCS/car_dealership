@@ -1,7 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+<<<<<<< HEAD
 import { setAuth } from "../../utils/auth";
+=======
+import { setAuth, getDefaultRoute } from "../../utils/auth";
+>>>>>>> main
 import AuthShell from "../../components/AuthShell";
 
 function Login() {
@@ -27,7 +31,11 @@ function Login() {
         role: res.data.user.role,
         user: res.data.user,
       });
+<<<<<<< HEAD
       navigate("/vehicles");
+=======
+      navigate(getDefaultRoute(res.data.user.role), { replace: true });
+>>>>>>> main
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
     } finally {
