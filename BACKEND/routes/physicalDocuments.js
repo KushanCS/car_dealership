@@ -19,6 +19,10 @@ const normalizeDocFields = (doc) => {
   return doc;
 };
 
+const handleInternalSync = async (req, res) => {
+  return res.status(204).end();
+};
+
 router.post("/", auth, authorize("staff", "admin"), async (req, res) => {
   try {
     const doc = await PhysicalDocument.create({
