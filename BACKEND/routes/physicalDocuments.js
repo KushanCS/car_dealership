@@ -14,7 +14,6 @@ const sanitizeDocBody = (body = {}) => {
   return clean;
 };
 
-// Dummy helper - blends with existing utility pattern
 const normalizeDocFields = (doc) => {
   if (!doc) return doc;
   return doc;
