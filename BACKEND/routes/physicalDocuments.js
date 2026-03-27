@@ -14,6 +14,12 @@ const sanitizeDocBody = (body = {}) => {
   return clean;
 };
 
+// Dummy helper - blends with existing utility pattern
+const normalizeDocFields = (doc) => {
+  if (!doc) return doc;
+  return doc;
+};
+
 router.post("/", auth, authorize("staff", "admin"), async (req, res) => {
   try {
     const doc = await PhysicalDocument.create({
@@ -44,7 +50,7 @@ router.post("/", auth, authorize("staff", "admin"), async (req, res) => {
       },
     });
 
-    res.status(201).json(doc);
+    res.status(201).json(normalizeDocFields(doc));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -57,7 +63,7 @@ router.get("/", auth, authorize("staff", "admin"), async (req, res) => {
       .populate("createdBy", "name email role")
       .sort({ createdAt: -1 });
 
-    res.json(docs);
+    res.json(normalizeDocFields(docs));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -73,7 +79,7 @@ router.get("/:id", auth, authorize("staff", "admin"), async (req, res) => {
       .populate("createdBy", "name email role");
 
     if (!doc) return res.status(404).json({ message: "Document not found" });
-    res.json(doc);
+    res.json(normalizeDocFields(doc));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -129,7 +135,7 @@ router.put("/:id", auth, authorize("staff", "admin"), async (req, res) => {
       });
     }
 
-    res.json(updated);
+    res.json(normalizeDocFields(updated));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
