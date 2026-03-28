@@ -9,6 +9,7 @@ const STATUS_STYLES = {
   in_use: { bg: "rgba(12, 58, 87, 0.08)", color: "#0C3A57", label: "In Use" },
   missing: { bg: "rgba(186, 94, 94, 0.12)", color: "var(--danger)", label: "Missing" },
   archived: { bg: "rgba(12, 58, 87, 0.08)", color: "#0C3A57", label: "Archived" },
+  pending: { bg: "rgba(255, 193, 7, 0.15)", color: "#E6A700", label: "Pending" },
 };
 
 export default function DocumentList() {
@@ -42,7 +43,8 @@ export default function DocumentList() {
     const inUse = docs.filter((d) => String(d.status || "").toLowerCase() === "in_use").length;
     const missing = docs.filter((d) => String(d.status || "").toLowerCase() === "missing").length;
     const archived = docs.filter((d) => String(d.status || "").toLowerCase() === "archived").length;
-    return { total, available, inUse, missing, archived };
+    const pending = docs.filter((d) => String(d.status || "").toLowerCase() === "pending").length;
+    return { total, available, inUse, missing, archived, pending };
   }, [docs]);
 
   const filtered = useMemo(() => {
@@ -88,6 +90,7 @@ export default function DocumentList() {
         <MetricCard label="In Use" value={loading ? "—" : stats.inUse} sub="Currently checked out" />
         <MetricCard label="Missing" value={loading ? "—" : stats.missing} sub="Needs attention" />
         <MetricCard label="Archived" value={loading ? "—" : stats.archived} sub="Stored records" />
+        <MetricCard label="Pending" value={loading ? "—" : stats.pending} sub="Awaiting action" />
       </div>
 
       <div style={{ marginBottom: "20px" }}>
@@ -104,6 +107,7 @@ export default function DocumentList() {
               <option value="in_use">In Use</option>
               <option value="missing">Missing</option>
               <option value="archived">Archived</option>
+              <option value="pending">Pending</option>
             </select>
             <button className="btn" onClick={load} disabled={loading}>
               {loading ? "Refreshing..." : "Refresh"}
