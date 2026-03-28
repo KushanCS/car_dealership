@@ -4,7 +4,10 @@ import api from "../../api/axios";
 import { updateDoc } from "../../api/documentApi";
 
 const DOC_TYPES = ["RC_BOOK", "INSURANCE", "TRANSFER_FORM", "EMISSION", "SERVICE_BOOK", "OTHER"];
-const DOC_STATUSES = ["AVAILABLE", "IN_USE", "MISSING", "ARCHIVED"];
+const DOC_STATUSES = ["AVAILABLE", "IN_USE", "MISSING", "ARCHIVED", "PENDING"];
+
+const getVehicleNumber = (vehicle) =>
+  vehicle?.vehicleNumber || vehicle?.vehicle_number || vehicle?.registrationNo || vehicle?.regNo || "";
 
 export default function EditDocument() {
   const { id } = useParams();
@@ -13,9 +16,17 @@ export default function EditDocument() {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const getVehicleNumber = (vehicle) =>
-    vehicle?.vehicleNumber || vehicle?.vehicle_number || vehicle?.registrationNo || vehicle?.regNo || "";
+  // New helper to validate form before submit
+  const validateForm = () => {
+    if (!form.title?.trim()) return "Title is required";
+    if (!form.location?.trim()) return "Location is required";
+    if (form.expiryDate && new Date(form.expiryDate) < new Date()) {
+      return "Expiry date cannot be in the past";
+    }
+    return null;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -32,6 +43,7 @@ export default function EditDocument() {
           status: doc.status || "AVAILABLE",
           location: doc.location || "",
           notes: doc.notes || "",
+          expiryDate: doc.expiryDate ? doc.expiryDate.split("T")[0] : "",
         });
         setVehicles(vehicleRes.data || []);
       } catch (err) {
@@ -48,15 +60,30 @@ export default function EditDocument() {
 
   const submit = async (e) => {
     e.preventDefault();
+    
+    const validationError = validateForm();
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    setSaving(true);
     try {
       await updateDoc(id, {
         ...form,
         vehicle: form.vehicle || undefined,
+        expiryDate: form.expiryDate || undefined,
       });
       navigate("/documents");
     } catch (err) {
       alert(err.response?.data?.message || "Update failed");
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   if (loading) {
@@ -102,13 +129,18 @@ export default function EditDocument() {
           <div style={{ display: "grid", gap: "18px" }}>
             <div>
               <label className="label">Title</label>
-              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input" required />
+              <input 
+                value={form.title} 
+                onChange={(e) => handleChange("title", e.target.value)} 
+                className="input" 
+                required 
+              />
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
               <div>
                 <label className="label">Document Type</label>
-                <select value={form.docType} onChange={(e) => setForm({ ...form, docType: e.target.value })} className="select">
+                <select value={form.docType} onChange={(e) => handleChange("docType", e.target.value)} className="select">
                   {DOC_TYPES.map((type) => (
                     <option key={type} value={type}>
                       {type}
@@ -118,7 +150,7 @@ export default function EditDocument() {
               </div>
               <div>
                 <label className="label">Status</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="select">
+                <select value={form.status} onChange={(e) => handleChange("status", e.target.value)} className="select">
                   {DOC_STATUSES.map((status) => (
                     <option key={status} value={status}>
                       {status}
@@ -130,12 +162,16 @@ export default function EditDocument() {
 
             <div>
               <label className="label">Reference Number</label>
-              <input value={form.referenceNo} onChange={(e) => setForm({ ...form, referenceNo: e.target.value })} className="input" />
+              <input 
+                value={form.referenceNo} 
+                onChange={(e) => handleChange("referenceNo", e.target.value)} 
+                className="input" 
+              />
             </div>
 
             <div>
               <label className="label">Vehicle</label>
-              <select value={form.vehicle} onChange={(e) => setForm({ ...form, vehicle: e.target.value })} className="select">
+              <select value={form.vehicle} onChange={(e) => handleChange("vehicle", e.target.value)} className="select">
                 <option value="">Unassigned</option>
                 {vehicles.map((vehicle) => {
                   const vehicleNumber = getVehicleNumber(vehicle);
@@ -150,12 +186,32 @@ export default function EditDocument() {
 
             <div>
               <label className="label">Location</label>
-              <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="input" required />
+              <input 
+                value={form.location} 
+                onChange={(e) => handleChange("location", e.target.value)} 
+                className="input" 
+                required 
+              />
+            </div>
+
+            <div>
+              <label className="label">Expiry Date (Optional)</label>
+              <input 
+                type="date" 
+                value={form.expiryDate} 
+                onChange={(e) => handleChange("expiryDate", e.target.value)} 
+                className="input" 
+              />
             </div>
 
             <div>
               <label className="label">Notes</label>
-              <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={4} className="textarea" />
+              <textarea 
+                value={form.notes} 
+                onChange={(e) => handleChange("notes", e.target.value)} 
+                rows={4} 
+                className="textarea" 
+              />
             </div>
           </div>
 
@@ -163,8 +219,8 @@ export default function EditDocument() {
             <button type="button" onClick={() => navigate("/documents")} className="btn" style={{ flex: 1 }}>
               Cancel
             </button>
-            <button type="submit" className="btn btnPrimary" style={{ flex: 1 }}>
-              Save Changes
+            <button type="submit" className="btn btnPrimary" style={{ flex: 1 }} disabled={saving}>
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
