@@ -33,6 +33,20 @@ export default function UserForm({
       : null
     : null;
 
+  // New helper for phone number formatting
+  const formatPhone = (value) => {
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 8) return cleaned;
+    return cleaned.replace(/(\d{4})(\d+)/, "$1-$2");
+  };
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhone(e.target.value);
+    onChange({
+      target: { name: "phone", value: formatted },
+    });
+  };
+
   return (
     <div className="page">
       <div className="pageHead">
@@ -56,6 +70,18 @@ export default function UserForm({
               <div>
                 <label className="label">Email Address</label>
                 <input className="input" type="email" name="email" value={form.email || ""} onChange={onChange} placeholder="name@company.com" required />
+              </div>
+              <div>
+                <label className="label">Phone Number</label>
+                <input 
+                  className="input" 
+                  type="tel" 
+                  name="phone" 
+                  value={form.phone || ""} 
+                  onChange={handlePhoneChange} 
+                  placeholder="9123-4567" 
+                  maxLength={12}
+                />
               </div>
               {showPassword && (
                 <>
@@ -118,6 +144,32 @@ export default function UserForm({
                   Deactivate account
                 </label>
               )}
+            </div>
+          </SectionCard>
+
+          {/* New Section */}
+          <SectionCard title="Additional Information" subtitle="Optional details for better user management.">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              <div>
+                <label className="label">Department</label>
+                <input 
+                  className="input" 
+                  name="department" 
+                  value={form.department || ""} 
+                  onChange={onChange} 
+                  placeholder="e.g. Operations, Sales" 
+                />
+              </div>
+              <div>
+                <label className="label">Employee ID</label>
+                <input 
+                  className="input" 
+                  name="employeeId" 
+                  value={form.employeeId || ""} 
+                  onChange={onChange} 
+                  placeholder="EMP-00123" 
+                />
+              </div>
             </div>
           </SectionCard>
 
