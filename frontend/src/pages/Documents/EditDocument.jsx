@@ -9,6 +9,29 @@ const DOC_STATUSES = ["AVAILABLE", "IN_USE", "MISSING", "ARCHIVED", "PENDING"];
 const getVehicleNumber = (vehicle) =>
   vehicle?.vehicleNumber || vehicle?.vehicle_number || vehicle?.registrationNo || vehicle?.regNo || "";
 
+const formatDocType = (val) => {
+  const map = {
+    "RC_BOOK": "RC Book",
+    "INSURANCE": "Insurance",
+    "TRANSFER_FORM": "Transfer Form",
+    "EMISSION": "Emission",
+    "SERVICE_BOOK": "Service Book",
+    "OTHER": "Other"
+  };
+  return map[val] || val;
+};
+
+const formatStatus = (val) => {
+  const map = {
+    "AVAILABLE": "Available",
+    "IN_USE": "In Use",
+    "MISSING": "Missing",
+    "ARCHIVED": "Archived",
+    "PENDING": "Pending"
+  };
+  return map[val] || val;
+};
+
 export default function EditDocument() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -114,19 +137,22 @@ export default function EditDocument() {
         </div>
       </div>
 
-      <div style={{ maxWidth: "760px", margin: "0 auto" }}>
-        <div style={{ display: "grid", gap: "10px", marginBottom: "24px" }}>
-          <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--primary)", fontWeight: 700 }}>
+      <div style={{ maxWidth: "720px", margin: "0 auto", background: "#ffffff", padding: "40px", borderRadius: "24px", boxShadow: "0 12px 40px rgba(12, 58, 87, 0.06)", border: "1px solid rgba(12, 58, 87, 0.08)", marginBottom: "40px" }}>
+        <div style={{ display: "grid", gap: "10px", marginBottom: "32px" }}>
+          <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--primary)", fontWeight: 800 }}>
             Document Editor
           </div>
-          <div style={{ fontSize: "28px", fontWeight: 800, color: "var(--navy)" }}>Refine document details</div>
-          <div style={{ color: "var(--text-muted)", lineHeight: 1.6 }}>
+          <div style={{ fontSize: "28px", fontWeight: 900, color: "var(--navy)", letterSpacing: "-0.02em" }}>Refine document details</div>
+          <div style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}>
             Keep storage, status, and vehicle references accurate for day-to-day operations.
           </div>
         </div>
 
-        <form onSubmit={submit} style={{ display: "grid", gap: "22px" }}>
-          <div style={{ display: "grid", gap: "18px" }}>
+        <form onSubmit={submit} style={{ display: "grid", gap: "32px" }}>
+          
+          {/* Core Details */}
+          <div style={{ display: "grid", gap: "20px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Core Details</div>
             <div>
               <label className="label">Title</label>
               <input 
@@ -143,7 +169,7 @@ export default function EditDocument() {
                 <select value={form.docType} onChange={(e) => handleChange("docType", e.target.value)} className="select">
                   {DOC_TYPES.map((type) => (
                     <option key={type} value={type}>
-                      {type}
+                      {formatDocType(type)}
                     </option>
                   ))}
                 </select>
@@ -153,13 +179,17 @@ export default function EditDocument() {
                 <select value={form.status} onChange={(e) => handleChange("status", e.target.value)} className="select">
                   {DOC_STATUSES.map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {formatStatus(status)}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
+          </div>
 
+          {/* Tracking Info */}
+          <div style={{ display: "grid", gap: "20px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Tracking Information</div>
             <div>
               <label className="label">Reference Number</label>
               <input 
@@ -168,32 +198,37 @@ export default function EditDocument() {
                 className="input" 
               />
             </div>
-
-            <div>
-              <label className="label">Vehicle</label>
-              <select value={form.vehicle} onChange={(e) => handleChange("vehicle", e.target.value)} className="select">
-                <option value="">Unassigned</option>
-                {vehicles.map((vehicle) => {
-                  const vehicleNumber = getVehicleNumber(vehicle);
-                  return (
-                    <option key={vehicle._id} value={vehicle._id}>
-                      {vehicle.brand} {vehicle.type || ""} ({vehicle.year}){vehicleNumber ? ` - ${vehicleNumber}` : ""}
-                    </option>
-                  );
-                })}
-              </select>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
+              <div>
+                <label className="label">Vehicle</label>
+                <select value={form.vehicle} onChange={(e) => handleChange("vehicle", e.target.value)} className="select">
+                  <option value="">Unassigned</option>
+                  {vehicles.map((vehicle) => {
+                    const vehicleNumber = getVehicleNumber(vehicle);
+                    return (
+                      <option key={vehicle._id} value={vehicle._id}>
+                        {vehicle.brand} {vehicle.type || ""} ({vehicle.year}){vehicleNumber ? ` - ${vehicleNumber}` : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div>
+                <label className="label">Location</label>
+                <input 
+                  value={form.location} 
+                  onChange={(e) => handleChange("location", e.target.value)} 
+                  className="input" 
+                  required 
+                />
+              </div>
             </div>
+          </div>
 
-            <div>
-              <label className="label">Location</label>
-              <input 
-                value={form.location} 
-                onChange={(e) => handleChange("location", e.target.value)} 
-                className="input" 
-                required 
-              />
-            </div>
-
+          {/* Additional Info */}
+          <div style={{ display: "grid", gap: "20px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Additional Details</div>
             <div>
               <label className="label">Expiry Date (Optional)</label>
               <input 
@@ -215,11 +250,11 @@ export default function EditDocument() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "12px" }}>
-            <button type="button" onClick={() => navigate("/documents")} className="btn" style={{ flex: 1 }}>
+          <div style={{ display: "flex", gap: "16px", marginTop: "10px", paddingTop: "24px", borderTop: "1px solid rgba(12, 58, 87, 0.08)" }}>
+            <button type="button" onClick={() => navigate("/documents")} className="btn" style={{ flex: 1, borderRadius: "14px", padding: "14px", fontWeight: 800, background: "rgba(12, 58, 87, 0.05)", border: "none", color: "var(--navy)" }}>
               Cancel
             </button>
-            <button type="submit" className="btn btnPrimary" style={{ flex: 1 }} disabled={saving}>
+            <button type="submit" className="btn" style={{ flex: 1, borderRadius: "14px", padding: "14px", fontWeight: 800, background: "var(--primary)", color: "#fff", border: "none", boxShadow: "0 8px 20px rgba(141, 187, 1, 0.25)", transition: "all 0.2s ease" }} disabled={saving}>
               {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
