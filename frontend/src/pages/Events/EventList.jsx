@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import eventApi from "../../api/eventApi";
+import { getAuth } from "../../utils/auth";
 
 const FILTERS = ["all", "holiday", "weather", "flood", "special", "other"];
 
@@ -14,6 +15,9 @@ const EVENT_TYPE_STYLES = {
 
 export default function EventList() {
   const navigate = useNavigate();
+  const auth = getAuth();
+  const currentUserId = auth?.user?.id || auth?.user?._id || "";
+  const isAdmin = auth?.role === "admin";
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +85,7 @@ export default function EventList() {
 
       {error ? (
         <div
-          className="card cardPad"
+         
           style={{
             marginBottom: "20px",
             borderColor: "rgba(186, 94, 94, 0.2)",
@@ -100,7 +104,7 @@ export default function EventList() {
         <MetricCard label="Filtered" value={loading ? "—" : filteredEvents.length} sub={filter === "all" ? "Current full view" : `Showing ${filter}`} />
       </div>
 
-      <div className="card cardPad" style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px" }}>
         <div className="row" style={{ alignItems: "center", flexWrap: "wrap" }}>
           <div>
             <div className="sectionTitle">Browse Events</div>
@@ -123,11 +127,11 @@ export default function EventList() {
       </div>
 
       {loading ? (
-        <div className="card cardPad" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-muted)" }}>
+        <div style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-muted)" }}>
           Loading events...
         </div>
       ) : filteredEvents.length === 0 ? (
-        <div className="card cardPad" style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-muted)" }}>
+        <div style={{ textAlign: "center", padding: "56px 24px", color: "var(--text-muted)" }}>
           {events.length === 0 ? "No events created yet." : "No events match this filter."}
         </div>
       ) : (
@@ -141,8 +145,13 @@ export default function EventList() {
         >
           {filteredEvents.map((event) => {
             const typeStyle = EVENT_TYPE_STYLES[event.type] || EVENT_TYPE_STYLES.other;
+            const eventCreatorId =
+              typeof event.createdBy === "string"
+                ? event.createdBy
+                : event.createdBy?._id || "";
+            const canManageEvent = isAdmin || (currentUserId && currentUserId === eventCreatorId);
             return (
-              <div key={event._id} className="card cardPad" style={{ display: "grid", gap: "18px", width: "100%", maxWidth: "340px" }}>
+              <div key={event._id} className="eventCard" style={{ display: "grid", gap: "18px", width: "100%", maxWidth: "340px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", alignItems: "flex-start" }}>
                   <div style={{ display: "grid", gap: "10px" }}>
                     <div style={{ fontSize: "22px", fontWeight: 800, color: "var(--navy)", lineHeight: 1.15 }}>
@@ -195,17 +204,7 @@ export default function EventList() {
                   />
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
-                    padding: "14px",
-                    borderRadius: "16px",
-                    background: "rgba(236, 236, 236, 0.42)",
-                    border: "1px solid rgba(12, 58, 87, 0.06)",
-                  }}
-                >
+                <div className="eventDateCard" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <DateItem label="Start" value={formatDate(event.startDate)} />
                   <DateItem label="End" value={formatDate(event.endDate)} />
                 </div>
@@ -226,24 +225,26 @@ export default function EventList() {
                   Created by <strong style={{ color: "var(--navy)" }}>{event.createdBy?.name || "Unknown"}</strong>
                 </div>
 
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  <button className="btn btnPrimary" onClick={() => navigate(`/events/edit/${event._id}`)} style={{ flex: 1 }}>
-                    Edit Event
-                  </button>
-                  <button
-                    className="btn"
-                    onClick={() =>
-                      setDeleteDialog({
-                        open: true,
-                        eventId: event._id,
-                        eventName: event.name,
-                      })
-                    }
-                    style={{ flex: 1, color: "var(--danger)", borderColor: "rgba(186, 94, 94, 0.28)" }}
-                  >
-                    Delete
-                  </button>
-                </div>
+                {canManageEvent ? (
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button className="btn btnPrimary" onClick={() => navigate(`/events/edit/${event._id}`)} style={{ flex: 1 }}>
+                      Edit Event
+                    </button>
+                    <button
+                      className="btn"
+                      onClick={() =>
+                        setDeleteDialog({
+                          open: true,
+                          eventId: event._id,
+                          eventName: event.name,
+                        })
+                      }
+                      style={{ flex: 1, color: "var(--danger)", borderColor: "rgba(186, 94, 94, 0.28)" }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ) : null}
               </div>
             );
           })}
@@ -263,7 +264,7 @@ export default function EventList() {
             zIndex: 999,
           }}
         >
-          <div className="card cardPad" style={{ width: "100%", maxWidth: "420px" }}>
+          <div className="eventFormCard" style={{ width: "100%", maxWidth: "420px" }}>
             <div style={{ fontSize: "24px", fontWeight: 800, color: "var(--navy)", marginBottom: "10px" }}>Delete event?</div>
             <div style={{ color: "var(--text-muted)", lineHeight: 1.65, marginBottom: "22px" }}>
               Remove <strong style={{ color: "var(--navy)" }}>{deleteDialog.eventName}</strong> from your schedule. This action cannot be undone.

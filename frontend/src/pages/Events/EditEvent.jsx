@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import eventApi from "../../api/eventApi";
-
-const EVENT_COLORS = ["#8DBB01", "#0C3A57", "#3d8fa5", "#d48a3a", "#c86f7c", "#6d7fa0"];
 const EVENT_TYPES = [
   { value: "holiday", label: "Holiday" },
   { value: "weather", label: "Weather Issue" },
@@ -25,14 +23,9 @@ export default function EditEvent() {
     startDate: "",
     endDate: "",
     isShopClosed: true,
-    color: "#8DBB01",
   });
 
-  useEffect(() => {
-    fetchEvent();
-  }, [id]);
-
-  const fetchEvent = async () => {
+  const fetchEvent = useCallback(async () => {
     try {
       setLoading(true);
       const event = await eventApi.getEvent(id);
@@ -43,7 +36,6 @@ export default function EditEvent() {
         startDate: new Date(event.startDate).toISOString().split("T")[0],
         endDate: new Date(event.endDate).toISOString().split("T")[0],
         isShopClosed: event.isShopClosed,
-        color: event.color || "#8DBB01",
       });
       setError(null);
     } catch (err) {
@@ -52,7 +44,11 @@ export default function EditEvent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -105,7 +101,7 @@ export default function EditEvent() {
         </div>
       </div>
 
-      <div className="card cardPad" style={{ maxWidth: "760px", margin: "0 auto" }}>
+      <div className="eventFormCard" style={{ maxWidth: "760px", margin: "0 auto" }}>
         <div style={{ display: "grid", gap: "10px", marginBottom: "24px" }}>
           <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--primary)", fontWeight: 700 }}>
             Event Editor
@@ -123,7 +119,7 @@ export default function EditEvent() {
               padding: "14px 16px",
               borderRadius: "16px",
               border: "1px solid rgba(186, 94, 94, 0.18)",
-              background: "rgba(255,255,255,0.92)",
+              background: "var(--surface-strong)",
               color: "var(--danger)",
               fontWeight: 600,
             }}
@@ -167,17 +163,7 @@ export default function EditEvent() {
             </div>
           </div>
 
-          <div
-            style={{
-              padding: "16px",
-              borderRadius: "18px",
-              border: "1px solid var(--border)",
-              background: "rgba(236, 236, 236, 0.42)",
-              display: "flex",
-              gap: "12px",
-              alignItems: "flex-start",
-            }}
-          >
+          <div className="eventDateCard" style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
             <input
               type="checkbox"
               name="isShopClosed"
@@ -192,28 +178,6 @@ export default function EditEvent() {
                 Appointments will be blocked during this event period.
               </div>
             </label>
-          </div>
-
-          <div>
-            <label className="label">Color Accent</label>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              {EVENT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setFormData((current) => ({ ...current, color }))}
-                  style={{
-                    width: "42px",
-                    height: "42px",
-                    borderRadius: "999px",
-                    background: color,
-                    border: formData.color === color ? "3px solid #ffffff" : "2px solid rgba(12, 58, 87, 0.12)",
-                    boxShadow: formData.color === color ? "0 0 0 3px rgba(12, 58, 87, 0.18)" : "none",
-                    cursor: "pointer",
-                  }}
-                />
-              ))}
-            </div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", paddingTop: "6px" }}>
