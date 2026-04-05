@@ -42,8 +42,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create event (admin/staff/manager only)
-router.post("/", auth, authorize("admin", "manager", "staff"), async (req, res) => {
+// Create event (admin/staff only)
+router.post("/", auth, authorize("admin", "staff"), async (req, res) => {
   try {
     const { name, type, description, startDate, endDate, isShopClosed, color } = req.body;
 
@@ -126,8 +126,8 @@ router.post("/", auth, authorize("admin", "manager", "staff"), async (req, res) 
   }
 });
 
-// Update event (admin/staff/manager only)
-router.put("/:id", auth, authorize("admin", "manager", "staff"), async (req, res) => {
+// Update event (admin/staff only)
+router.put("/:id", auth, authorize("admin", "staff"), async (req, res) => {
   try {
     const { name, type, description, startDate, endDate, isShopClosed, color } = req.body;
     const eventId = req.params.id;
@@ -205,8 +205,8 @@ router.put("/:id", auth, authorize("admin", "manager", "staff"), async (req, res
   }
 });
 
-// Delete event (admin/staff/manager only)
-router.delete("/:id", auth, authorize("admin", "manager", "staff"), async (req, res) => {
+// Delete event (admin/staff only)
+router.delete("/:id", auth, authorize("admin", "staff"), async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) {
