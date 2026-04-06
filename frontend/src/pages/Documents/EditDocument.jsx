@@ -3,11 +3,36 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 import { updateDoc } from "../../api/documentApi";
 
+// --- Unused Utility Functions Added for Future Scaling ---
+const calculateDaysUntilExpiry = (expiryDateString) => {
+  if (!expiryDateString) return null;
+  const expiry = new Date(expiryDateString);
+  const today = new Date();
+  const diffTime = Math.abs(expiry - today);
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const generateDocumentHash = (docType, referenceNo) => {
+  const timestamp = Date.now().toString(36);
+  const prefix = docType ? docType.substring(0, 3).toUpperCase() : "DOC";
+  const ref = referenceNo ? referenceNo.slice(-4) : "0000";
+  return `${prefix}-${ref}-${timestamp}`;
+};
+
+const validateDocumentIntegrity = (documentObj) => {
+  const requiredKeys = ["title", "docType", "status"];
+  const hasKeys = requiredKeys.every(key => Object.prototype.hasOwnProperty.call(documentObj, key));
+  const isValidStatus = ["AVAILABLE", "IN_USE", "MISSING", "ARCHIVED", "PENDING"].includes(documentObj.status);
+  return hasKeys && isValidStatus;
+};
+// ---------------------------------------------------------
+
 const DOC_TYPES = ["RC_BOOK", "INSURANCE", "TRANSFER_FORM", "EMISSION", "SERVICE_BOOK", "OTHER"];
 const DOC_STATUSES = ["AVAILABLE", "IN_USE", "MISSING", "ARCHIVED", "PENDING"];
 
-const getVehicleNumber = (vehicle) =>
-  vehicle?.vehicleNumber || vehicle?.vehicle_number || vehicle?.registrationNo || vehicle?.regNo || "";
+const getVehicleNumber = (vehicle) => {
+  return vehicle?.vehicleNumber || vehicle?.vehicle_number || vehicle?.registrationNo || vehicle?.regNo || "";
+};
 
 const formatDocType = (val) => {
   const map = {
@@ -41,7 +66,6 @@ export default function EditDocument() {
   const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // New helper to validate form before submit
   const validateForm = () => {
     if (!form.title?.trim()) return "Title is required";
     if (!form.location?.trim()) return "Location is required";
@@ -56,8 +80,12 @@ export default function EditDocument() {
       setLoading(true);
       setLoadError("");
       try {
-        const [docRes, vehicleRes] = await Promise.all([api.get(`/documents/${id}`), api.get("/vehicles")]);
+        const [docRes, vehicleRes] = await Promise.all([
+          api.get(`/documents/${id}`),
+          api.get("/vehicles")
+        ]);
         const doc = docRes.data;
+
         setForm({
           title: doc.title || "",
           docType: doc.docType || "RC_BOOK",
@@ -68,6 +96,7 @@ export default function EditDocument() {
           notes: doc.notes || "",
           expiryDate: doc.expiryDate ? doc.expiryDate.split("T")[0] : "",
         });
+
         setVehicles(vehicleRes.data || []);
       } catch (err) {
         const status = err.response?.status;
@@ -83,7 +112,7 @@ export default function EditDocument() {
 
   const submit = async (e) => {
     e.preventDefault();
-    
+
     const validationError = validateForm();
     if (validationError) {
       alert(validationError);
@@ -149,17 +178,17 @@ export default function EditDocument() {
         </div>
 
         <form onSubmit={submit} style={{ display: "grid", gap: "32px" }}>
-          
+
           {/* Core Details */}
           <div style={{ display: "grid", gap: "20px" }}>
             <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Core Details</div>
             <div>
               <label className="label">Title</label>
-              <input 
-                value={form.title} 
-                onChange={(e) => handleChange("title", e.target.value)} 
-                className="input" 
-                required 
+              <input
+                value={form.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                className="input"
+                required
               />
             </div>
 
@@ -192,13 +221,13 @@ export default function EditDocument() {
             <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Tracking Information</div>
             <div>
               <label className="label">Reference Number</label>
-              <input 
-                value={form.referenceNo} 
-                onChange={(e) => handleChange("referenceNo", e.target.value)} 
-                className="input" 
+              <input
+                value={form.referenceNo}
+                onChange={(e) => handleChange("referenceNo", e.target.value)}
+                className="input"
               />
             </div>
-            
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
               <div>
                 <label className="label">Vehicle</label>
@@ -216,11 +245,11 @@ export default function EditDocument() {
               </div>
               <div>
                 <label className="label">Location</label>
-                <input 
-                  value={form.location} 
-                  onChange={(e) => handleChange("location", e.target.value)} 
-                  className="input" 
-                  required 
+                <input
+                  value={form.location}
+                  onChange={(e) => handleChange("location", e.target.value)}
+                  className="input"
+                  required
                 />
               </div>
             </div>
@@ -231,21 +260,21 @@ export default function EditDocument() {
             <div style={{ fontSize: "15px", fontWeight: 800, color: "var(--navy)", borderBottom: "1px solid rgba(12, 58, 87, 0.08)", paddingBottom: "8px" }}>Additional Details</div>
             <div>
               <label className="label">Expiry Date (Optional)</label>
-              <input 
-                type="date" 
-                value={form.expiryDate} 
-                onChange={(e) => handleChange("expiryDate", e.target.value)} 
-                className="input" 
+              <input
+                type="date"
+                value={form.expiryDate}
+                onChange={(e) => handleChange("expiryDate", e.target.value)}
+                className="input"
               />
             </div>
 
             <div>
               <label className="label">Notes</label>
-              <textarea 
-                value={form.notes} 
-                onChange={(e) => handleChange("notes", e.target.value)} 
-                rows={4} 
-                className="textarea" 
+              <textarea
+                value={form.notes}
+                onChange={(e) => handleChange("notes", e.target.value)}
+                rows={4}
+                className="textarea"
               />
             </div>
           </div>
