@@ -20,6 +20,7 @@ export default function Sidebar({ isOpen, onClose }) {
     // Management
     { path: '/leads', icon: '👥', label: 'CRM & Leads', roles: ['admin', 'staff'], section: 'Management' },
     { path: '/vehicles', icon: '🚗', label: 'Vehicle Inventory', roles: ['admin', 'staff'], section: 'Management' },
+    { path: '/ai-prediction', icon: '🧠', label: 'AI Prediction', roles: ['admin', 'staff'], section: 'Management' },
     { path: '/sales', icon: '💰', label: 'Sales Transactions', roles: ['admin', 'staff'], section: 'Management' },
     { path: '/appointments', icon: '📅', label: 'Appointments', roles: ['admin', 'staff'], section: 'Management' },
     

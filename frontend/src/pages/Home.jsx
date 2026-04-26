@@ -4,6 +4,7 @@ import { buildAssetUrl } from "../api/axios";
 import { getVehicles } from "../api/vehicleApi";
 import { FUEL_TYPES, TRANSMISSION_TYPES, VEHICLE_TYPES } from "./Vehicles/VehicleForm";
 import { getAuth } from "../utils/auth";
+import RAGChat from "../components/RAGChat";
 
 function formatCurrency(value) {
   return `LKR ${Number(value || 0).toLocaleString()}`;
@@ -271,6 +272,13 @@ export default function Home() {
             </div>
           )}
         </div>
+      </section>
+
+
+
+
+      <section style={{ maxWidth: "1320px", margin: "0 auto", padding: "0 20px 56px" }}>
+        <RAGChat />
       </section>
 
       <section style={{ maxWidth: "1320px", margin: "0 auto", padding: "0 20px 56px" }}>

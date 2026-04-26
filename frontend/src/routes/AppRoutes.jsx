@@ -44,6 +44,7 @@ import EditDocument from "../pages/Documents/EditDocument";
 import EventList from "../pages/Events/EventList";
 import AddEvent from "../pages/Events/AddEvent";
 import EditEvent from "../pages/Events/EditEvent";
+import AIPredictionPage from "../pages/AIPredictionPage";
 
 function AppRoutes() {
   return (
@@ -131,6 +132,11 @@ function AppRoutes() {
       </RequireAuth>} />
       <Route path="/events/edit/:id" element={<RequireAuth roles={["admin", "staff"]}>
         <EditEvent />
+      </RequireAuth>} />
+
+      {/* AI Prediction Route */}
+      <Route path="/ai-prediction" element={<RequireAuth roles={["admin", "staff"]}>
+        <AIPredictionPage />
       </RequireAuth>} />
 
       {/* Auth Routes - Public */}

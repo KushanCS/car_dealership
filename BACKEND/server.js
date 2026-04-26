@@ -2,6 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const dns = require("dns");
+
+// Fast-fix for Windows Node.js `querySrv ECONNREFUSED` bug natively failing DNS SRV queries
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const authMiddleware = require("./middleware/auth.middleware");
 const { startAppointmentReminder } = require("./utils/appointmentReminder");
 require("dotenv").config();
@@ -12,7 +17,7 @@ const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 const vehicle_routes = require("./routes/vehicles")
 
-// db ..
+// db
 if (!mongoUri) {
   console.error("MongoDB Connection Failed: missing MONGO_URI or MONGODB_URI in BACKEND/.env");
 } else {

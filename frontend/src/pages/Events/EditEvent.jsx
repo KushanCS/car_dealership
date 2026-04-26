@@ -12,6 +12,7 @@ const EVENT_TYPES = [
 export default function EditEvent() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const minEventDate = new Date().toISOString().split("T")[0];
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -64,6 +65,9 @@ export default function EditEvent() {
     if (!formData.name.trim()) return setError("Event name is required");
     if (!formData.startDate) return setError("Start date is required");
     if (!formData.endDate) return setError("End date is required");
+    if (formData.startDate < minEventDate) {
+      return setError("Events can only be updated from today onward");
+    }
     if (new Date(formData.endDate) < new Date(formData.startDate)) {
       return setError("End date must be on or after start date");
     }
@@ -145,11 +149,11 @@ export default function EditEvent() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
               <div>
                 <label className="label">Start Date</label>
-                <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="input" />
+                <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="input" min={minEventDate} />
               </div>
               <div>
                 <label className="label">End Date</label>
-                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="input" min={formData.startDate || undefined} />
+                <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className="input" min={formData.startDate || minEventDate} />
               </div>
             </div>
 

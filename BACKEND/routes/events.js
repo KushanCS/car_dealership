@@ -10,6 +10,12 @@ function startOfDay(value) {
   return date;
 }
 
+function todayStart() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
 // Get all events (public - for appointment validation)
 router.get("/", async (req, res) => {
   try {
@@ -51,10 +57,17 @@ router.post("/", auth, authorize("admin", "staff"), async (req, res) => {
     // Parse and validate dates
     const start = startOfDay(startDate);
     const end = startOfDay(endDate);
+    const minEventDate = todayStart();
     
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return res.status(400).json({ 
         message: "Invalid date format. Please use YYYY-MM-DD format" 
+      });
+    }
+
+    if (start < minEventDate) {
+      return res.status(400).json({
+        message: "Events can only be created from today onward",
       });
     }
 
@@ -148,6 +161,11 @@ router.put("/:id", auth, authorize("admin", "staff"), async (req, res) => {
       event.endDate = end;
     }
 
+    if (event.startDate < todayStart()) {
+      return res.status(400).json({
+        message: "Events can only be updated from today onward",
+      });
+    }
     if (isShopClosed !== undefined) event.isShopClosed = isShopClosed;
     if (color) event.color = color;
 

@@ -38,7 +38,7 @@ const EventSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Validate that endDate is after or same as startDate using custom validation 
+// Validate that endDate is after or same as startDate using custom validation
 EventSchema.pre("save", function() {
   if (this.endDate < this.startDate) {
     throw new Error("End date must be on or after start date");
