@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Build outputs
+build/
+dist/
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments (if you ever add a venv)
+.venv/
+env/
+venv/
+ENV/
+
+# Project-specific Data
+ai-microservice/data/*.csv
+
+# Project-specific Models
+ai-microservice/model/*.pkl
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE settings (PyCharm/VS Code)
+.idea/
+.vscode/
