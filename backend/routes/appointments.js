@@ -8,6 +8,7 @@ const {
   validateAppointmentDetails,
   getAvailableStaff,
   getAvailableTimeSlots,
+  getDateClosureInfo,
 } = require("../utils/appointmentValidation");
 
 function formatAppointmentVehicle(vehicle) {
@@ -37,7 +38,7 @@ function buildAppointmentAccessFilter(req) {
   };
 }
 
-router.post("/add", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.post("/add", auth, authorize("staff", "admin"), async (req, res) => {
   try {
     const { date, time } = req.body;
     const errors = await validateAppointmentDetails(date, time);
@@ -96,16 +97,19 @@ router.post("/add", auth, authorize("staff", "manager", "admin"), async (req, re
   }
 });
 
-router.get("/available-slots/:date", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.get("/available-slots/:date", auth, authorize("staff", "admin"), async (req, res) => {
   try {
-    const slots = await getAvailableTimeSlots(req.params.date, req.query.excludeAppointmentId || null);
-    res.json({ slots });
+    const closure = await getDateClosureInfo(req.params.date);
+    const slots = closure
+      ? []
+      : await getAvailableTimeSlots(req.params.date, req.query.excludeAppointmentId || null);
+    res.json({ slots, closure });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-router.get("/", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.get("/", auth, authorize("staff", "admin"), async (req, res) => {
   try {
     const list = await Appointment.find(buildAppointmentAccessFilter(req))
       .populate("lead")
@@ -121,7 +125,7 @@ router.get("/", auth, authorize("staff", "manager", "admin"), async (req, res) =
   }
 });
 
-router.get("/:id", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.get("/:id", auth, authorize("staff", "admin"), async (req, res) => {
   if (!validateObjectId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
 
   const a = await Appointment.findOne({ _id: req.params.id, ...buildAppointmentAccessFilter(req) })
@@ -135,7 +139,7 @@ router.get("/:id", auth, authorize("staff", "manager", "admin"), async (req, res
   res.json(a);
 });
 
-router.put("/:id", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.put("/:id", auth, authorize("staff", "admin"), async (req, res) => {
   if (!validateObjectId(req.params.id)) return res.status(400).json({ message: "Invalid appointment ID" });
 
   try {
@@ -220,7 +224,7 @@ router.put("/:id", auth, authorize("staff", "manager", "admin"), async (req, res
   }
 });
 
-router.put("/:id/complete", auth, authorize("staff", "manager", "admin"), async (req, res) => {
+router.put("/:id/complete", auth, authorize("staff", "admin"), async (req, res) => {
   try {
     const { id } = req.params;
     if (!validateObjectId(id)) return res.status(400).json({ message: "Invalid appointment ID" });
@@ -273,7 +277,7 @@ router.put("/:id/complete", auth, authorize("staff", "manager", "admin"), async 
   }
 });
 
-router.delete("/:id", auth, authorize("admin", "manager", "staff"), async (req, res) => {
+router.delete("/:id", auth, authorize("admin", "staff"), async (req, res) => {
   try {
     const { id } = req.params;
     if (!validateObjectId(id)) return res.status(400).json({ message: "Invalid appointment id" });
