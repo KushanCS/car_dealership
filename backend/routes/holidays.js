@@ -13,8 +13,8 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Add a new holiday (admin/manager only)
-router.post("/add", auth, authorize("admin", "manager"), async (req, res) => {
+// Add a new holiday (admin only)
+router.post("/add", auth, authorize("admin"), async (req, res) => {
   try {
     const { name, date, description } = req.body;
     
@@ -50,8 +50,8 @@ router.post("/add", auth, authorize("admin", "manager"), async (req, res) => {
   }
 });
 
-// Delete a holiday (admin/manager only)
-router.delete("/:id", auth, authorize("admin", "manager"), async (req, res) => {
+// Delete a holiday (admin only)
+router.delete("/:id", auth, authorize("admin"), async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -67,7 +67,7 @@ router.delete("/:id", auth, authorize("admin", "manager"), async (req, res) => {
 });
 
 // Add multiple holidays at once (for initial setup)
-router.post("/bulk-add", auth, authorize("admin", "manager"), async (req, res) => {
+router.post("/bulk-add", auth, authorize("admin"), async (req, res) => {
   try {
     const { holidays } = req.body;
     

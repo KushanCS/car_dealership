@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import eventApi from "../../api/eventApi";
 
-const EVENT_COLORS = ["#8DBB01", "#0C3A57", "#3d8fa5", "#d48a3a", "#c86f7c", "#6d7fa0"];
 const EVENT_TYPES = [
   { value: "holiday", label: "Holiday" },
   { value: "weather", label: "Weather Issue" },
@@ -23,7 +22,6 @@ export default function AddEvent() {
     startDate: "",
     endDate: "",
     isShopClosed: true,
-    color: "#8DBB01",
   });
 
   const handleChange = (e) => {
@@ -69,14 +67,14 @@ export default function AddEvent() {
         </div>
       </div>
 
-      <div className="card cardPad" style={{ maxWidth: "760px", margin: "0 auto" }}>
+      <div className="eventFormCard" style={{ maxWidth: "760px", margin: "0 auto" }}>
         <div style={{ display: "grid", gap: "10px", marginBottom: "24px" }}>
           <div style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--primary)", fontWeight: 700 }}>
             New Event
           </div>
           <div style={{ fontSize: "28px", fontWeight: 800, color: "var(--navy)" }}>Minimal setup, clear scheduling</div>
           <div style={{ color: "var(--text-muted)", lineHeight: 1.6 }}>
-            Use concise details and a clean visual code so your event list stays easy to scan.
+            Use concise details so your event list stays easy to scan.
           </div>
         </div>
 
@@ -138,17 +136,7 @@ export default function AddEvent() {
             </div>
           </div>
 
-          <div
-            style={{
-              padding: "16px",
-              borderRadius: "18px",
-              border: "1px solid var(--border)",
-              background: "rgba(236, 236, 236, 0.42)",
-              display: "flex",
-              gap: "12px",
-              alignItems: "flex-start",
-            }}
-          >
+          <div className="eventDateCard" style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
             <input
               type="checkbox"
               name="isShopClosed"
@@ -163,28 +151,6 @@ export default function AddEvent() {
                 Customers will not be able to book appointments during this event window.
               </div>
             </label>
-          </div>
-
-          <div>
-            <label className="label">Color Accent</label>
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              {EVENT_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setFormData((current) => ({ ...current, color }))}
-                  style={{
-                    width: "42px",
-                    height: "42px",
-                    borderRadius: "999px",
-                    background: color,
-                    border: formData.color === color ? "3px solid #ffffff" : "2px solid rgba(12, 58, 87, 0.12)",
-                    boxShadow: formData.color === color ? "0 0 0 3px rgba(12, 58, 87, 0.18)" : "none",
-                    cursor: "pointer",
-                  }}
-                />
-              ))}
-            </div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", paddingTop: "6px" }}>
