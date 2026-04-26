@@ -12,7 +12,7 @@ const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 const vehicle_routes = require("./routes/vehicles")
 
-// db
+// db ..
 if (!mongoUri) {
   console.error("MongoDB Connection Failed: missing MONGO_URI or MONGODB_URI in BACKEND/.env");
 } else {
