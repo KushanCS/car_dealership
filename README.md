@@ -24,6 +24,8 @@ Default local ports:
 - Backend API: `http://localhost:8070`
 - AI microservice: `http://localhost:8000`
 
+Ports can be overridden (e.g., backend uses `PORT` in `BACKEND/.env`).
+
 ## Quick Start (Development)
 
 ### 1) Backend API
@@ -61,6 +63,8 @@ Run the API:
 ```bash
 npm run dev
 ```
+
+This repo’s backend `package.json` does not define `npm start` by default—use `npm run dev`.
 
 Optional seed scripts:
 
@@ -121,6 +125,20 @@ python test.py
 Endpoint:
 - `POST http://localhost:8000/predict`
 
+## Run All Services (3 Terminals)
+
+```bash
+cd BACKEND && npm run dev
+```
+
+```bash
+cd frontend && npm start
+```
+
+```bash
+cd ai-microservice && source .venv/bin/activate && python main.py
+```
+
 ## Key Docs
 
 - Appointment system rules and setup: [docs/APPOINTMENT_SYSTEM_SETUP.md](docs/APPOINTMENT_SYSTEM_SETUP.md)
@@ -151,6 +169,19 @@ AI microservice:
 - **Auth**: protected routes should use `BACKEND/middleware/auth.middleware.js` and role checks via `BACKEND/middleware/authorize.js`.
 - **Uploads**: store vehicle images under `BACKEND/uploads/vehicles` and return URLs that work behind proxies (see `IMAGE_BASE_URL`).
 - **Data & models**: AI training data (`ai-microservice/data/*.csv`) and trained model artifacts (`ai-microservice/model/*.pkl`) are intentionally not tracked in git.
+
+## Contributors
+
+Our team consists of six members from Module: **IT2021**, each leading a specific functional module while collaborating on the core Intelligent Engine.
+
+| Name | Student ID | Primary Responsibility |
+| --- | --- | --- |
+| Somawantha M.H.K.C. | IT24100111 | Appointment Management |
+| Vaisnavi L. | IT24102469 | Vehicle Management |
+| Sooriyabandara U.R.G.W.K. | IT24102798 | Payment Management |
+| Abeysinghe J.H.C.M. | IT24103014 | Event Management |
+| Samarasinghe S.R.G.N.B. | IT24101261 | Lead Management |
+| Dulwanya W.M.N. | IT24104312 | User Management |
 
 ## Troubleshooting
 
