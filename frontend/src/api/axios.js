@@ -1,7 +1,7 @@
 import axios from "axios";
 import { clearAuth } from "../utils/auth";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:8070/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://car-dealership-3spj.onrender.com/api";
 export const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 
 export function buildAssetUrl(url) {
